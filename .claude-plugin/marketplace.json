@@ -36,6 +36,20 @@
         "./vault/vault-lint",
         "./vault/vault-session"
       ]
+    },
+    {
+      "name": "logical",
+      "description": "Logical thinking: decompose a topic into a MECE numbered tree (logical-think), then turn the numbered result into an executable folder structure of small work units (logical-tree).",
+      "author": {
+        "name": "mupaistudio"
+      },
+      "category": "productivity",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./logical/logical-think",
+        "./logical/logical-tree"
+      ]
     }
   ]
 }

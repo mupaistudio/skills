@@ -41,6 +41,24 @@ Install:
 
 Start with: "vault-provision: create topics `cooking` and `invest-notes`".
 
+## logical
+
+Two skills that work as a pair.
+
+| Skill | Does |
+|---|---|
+| `logical-think` | Decomposes a complex topic into a numbered MECE tree (same-criteria sibling branches, closed/open set check, atomic 1-3 day tasks). |
+| `logical-tree` | Turns a numbered thinking result into an executable `small_pictures/` workset: one folder per unit with four process files plus a `workset_controller`. |
+
+Install:
+
+```
+/plugin marketplace add mupaistudio/skills
+/plugin install logical@mupaistudio-skills
+```
+
+Start with: "logical-think: break down 'launch a newsletter' (depth deep)", then "logical-tree: build the workset from that result".
+
 ## License
 
 MIT
