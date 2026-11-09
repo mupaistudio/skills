@@ -2,6 +2,8 @@
 
 Claude Code skills by mupaistudio.
 
+> **Skills are not meant to be used as-is.** Treat everything here as a starting point and tune it to your own temperament and taste: change the wording, the steps, the folder layout, the defaults. Fork it, edit the `SKILL.md` files, and make the skills yours.
+
 ## use-browser
 
 Claude Code drives a dedicated Chrome through the Chrome DevTools Protocol (CDP): open pages, click, type, take screenshots, collect console and network errors, run multi-step scenarios. It never touches your everyday Chrome (separate profile). **Windows only.**
