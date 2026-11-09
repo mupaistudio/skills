@@ -43,12 +43,15 @@ Start with: "vault-provision: create topics `cooking` and `invest-notes`".
 
 ## logical
 
-Two skills that work as a pair.
+A toolkit around MECE logical thinking. The skills chain: think, then verify, then build or export.
 
 | Skill | Does |
 |---|---|
 | `logical-think` | Decomposes a complex topic into a numbered MECE tree (same-criteria sibling branches, closed/open set check, atomic 1-3 day tasks). |
+| `logical-verification` | Checks a thinking result for ME/CE violations, criteria consistency and quality, and writes a scored report. |
 | `logical-tree` | Turns a numbered thinking result into an executable `small_pictures/` workset: one folder per unit with four process files plus a `workset_controller`. |
+| `logical-csv` | Exports the numbered hierarchy to spreadsheet-ready CSV (vertical columns or sitemap). |
+| `logical-memory` | Verifies and reorganizes Claude Code auto-memory (MEMORY.md plus topic files) with MECE; moves, never deletes, and only after approval. |
 
 Install:
 

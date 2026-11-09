@@ -39,7 +39,7 @@
     },
     {
       "name": "logical",
-      "description": "Logical thinking: decompose a topic into a MECE numbered tree (logical-think), then turn the numbered result into an executable folder structure of small work units (logical-tree).",
+      "description": "Logical thinking toolkit: decompose a topic into a MECE numbered tree (logical-think), build an executable workset (logical-tree), export to hierarchical CSV (logical-csv), verify MECE quality (logical-verification), and tidy auto-memory (logical-memory).",
       "author": {
         "name": "mupaistudio"
       },
@@ -48,7 +48,10 @@
       "strict": false,
       "skills": [
         "./logical/logical-think",
-        "./logical/logical-tree"
+        "./logical/logical-tree",
+        "./logical/logical-csv",
+        "./logical/logical-verification",
+        "./logical/logical-memory"
       ]
     }
   ]

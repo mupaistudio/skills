@@ -126,5 +126,6 @@ Use this template:
 ## Follow-On Skills
 
 - Use `logical-tree` to convert a numbered thinking result into folders and Module Process files.
-- Use `/logical:csv` if available to convert the numbered hierarchy into spreadsheet-ready CSV.
-- Use `/logical:verification` if available to produce a dedicated MECE verification report.
+- Use `logical-csv` to convert the numbered hierarchy into spreadsheet-ready CSV.
+- Use `logical-verification` to produce a dedicated MECE verification report.
+- Use `logical-memory` to verify and reorganize auto-memory files with the same MECE rules.
