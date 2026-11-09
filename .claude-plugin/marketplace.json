@@ -2,16 +2,40 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "mupaistudio-skills",
   "description": "Claude Code skills by mupaistudio",
-  "owner": { "name": "mupaistudio" },
+  "owner": {
+    "name": "mupaistudio"
+  },
   "plugins": [
     {
       "name": "use-browser",
       "description": "Claude Code controls a dedicated Chrome through CDP: open pages, click, type, screenshots, console/network error collection, multi-step scenarios (Windows, Node.js 18+)",
-      "author": { "name": "mupaistudio" },
+      "author": {
+        "name": "mupaistudio"
+      },
       "category": "development",
       "source": "./",
       "strict": false,
-      "skills": ["./use-browser"]
+      "skills": [
+        "./use-browser"
+      ]
+    },
+    {
+      "name": "vault",
+      "description": "Personal knowledge vault: create unlimited topics (vault-provision), drop raw notes (vault-push), organize them into documents (vault-ingest), search, lint, and write per-topic session records linked across topics (vault-session).",
+      "author": {
+        "name": "mupaistudio"
+      },
+      "category": "productivity",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./vault/vault-provision",
+        "./vault/vault-push",
+        "./vault/vault-ingest",
+        "./vault/vault-search",
+        "./vault/vault-lint",
+        "./vault/vault-session"
+      ]
     }
   ]
 }

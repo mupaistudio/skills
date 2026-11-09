@@ -19,6 +19,28 @@ On first use Claude runs `ensure-deps.js`, which installs a pinned `playwright-c
 
 Then just ask, for example: "use-browser: open https://example.com and take a screenshot", "collect console errors on this page".
 
+## vault
+
+A personal knowledge vault you grow topic by topic. Create as many topics as you like; each topic is a folder with an overview, a document map and an inbox. (Not a secrets manager — it stores notes and decisions.)
+
+| Skill | Does |
+|---|---|
+| `vault-provision` | Creates a new topic skeleton (README, INDEX, _inbox) and installs the vault's `CLAUDE.md` conventions on first use. Several topics at once is fine. |
+| `vault-push` | Drops raw notes / decisions / pointers into a topic's `_inbox/`. |
+| `vault-ingest` | Organizes the inbox into proper documents (6-section template) and updates INDEX. |
+| `vault-search` | Answers from the vault with source paths; says "not there" instead of inventing. |
+| `vault-lint` | Checks dead pointers, INDEX mismatches, pasted bulk copies, stale and duplicate docs. |
+| `vault-session` | Writes a session record **per topic** (`history/<topic>/<person>/`), cross-linked when a session spans topics, so the next session can resume. |
+
+Install:
+
+```
+/plugin marketplace add mupaistudio/skills
+/plugin install vault@mupaistudio-skills
+```
+
+Start with: "vault-provision: create topics `cooking` and `invest-notes`".
+
 ## License
 
 MIT
