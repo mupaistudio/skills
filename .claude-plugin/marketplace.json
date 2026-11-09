@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "mupaistudio-skills",
+  "description": "Claude Code skills by mupaistudio",
+  "owner": { "name": "mupaistudio" },
+  "plugins": [
+    {
+      "name": "use-browser",
+      "description": "Claude Code controls a dedicated Chrome through CDP: open pages, click, type, screenshots, console/network error collection, multi-step scenarios (Windows, Node.js 18+)",
+      "author": { "name": "mupaistudio" },
+      "category": "development",
+      "source": "./",
+      "strict": false,
+      "skills": ["./use-browser"]
+    }
+  ]
+}
