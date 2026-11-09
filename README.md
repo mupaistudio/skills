@@ -21,4 +21,4 @@ Then just ask, for example: "use-browser: open https://example.com and take a sc
 
 ## License
 
-MIT
+Public domain (Unlicense) — copy, modify, redistribute freely, for any purpose.
