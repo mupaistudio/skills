@@ -113,7 +113,7 @@ $chromeArgs = @(
     "--no-default-browser-check",
     # PasswordLeakDetection: Chrome's "compromised password" tab-modal dialog (shown after
     # logging in with a leaked password such as 1234) swallows ALL CDP input while page JS keeps
-    # running. Disabled since 2026-09-26 (tool.md section 26).
+    # running. Disabled.
     "--disable-features=ChromeWhatsNewUI,PasswordLeakDetection",
     "--restore-last-session=false",
     $Url

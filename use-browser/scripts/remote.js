@@ -1,34 +1,34 @@
 #!/usr/bin/env node
 /**
- * use-browser scripts/remote.js — CDP/Playwright 즉석 조작 CLI.
+ * use-browser scripts/remote.js — instant CDP/Playwright control CLI.
  *
- * 전제: start.ps1 로 CDP Chrome 이 떠 있어야 함. 포트 = env CDP_PORT, 없으면 9333.
- *       playwright-core 는 ensure-deps.js 가 PC 한 자리에 깐 고정 판을 쓴다.
+ * Prerequisite: CDP Chrome must be running via start.ps1. Port = env CDP_PORT, else 9333.
+ *       playwright-core is the pinned copy ensure-deps.js installs in one place per PC.
  *
- * 사용:
+ * Usage:
  *   node remote.js tabs
  *   node remote.js navigate <url> [--tab=<sel>] [--new]
- *   node remote.js reload [--hard] [--nuke] [--url=<url>] [--ms=3000] [--tab=<sel>]  # --hard 캐시 비움 · --nuke SW·Cache API 까지
+ *   node remote.js reload [--hard] [--nuke] [--url=<url>] [--ms=3000] [--tab=<sel>]  # --hard clears cache · --nuke also clears SW and Cache API
  *   node remote.js shot <name> [--tab=<sel>] [--full] [--clip=x,y,w,h] [--cdp] [--case=<slug>]
  *   node remote.js click <selector> [--tab=<sel>]
- *   node remote.js mouse <x> <y> [--dbl] [--watch=<ms>] [--tab=<sel>]  # 좌표 클릭(isTrusted). --watch 동안 쓰기·오류·대화상자·토스트 수집
- *   node remote.js mousetest [<x> <y>] [--tab=<sel>]                    # 입력 생존 확인: 실제 도달한 마우스 이벤트
- *   node remote.js type <selector> <text> [--tab=<sel>]                 # React 호환 native setter 사용
- *   node remote.js keys <text> [--select-all] [--enter] [--tab=<sel>]   # 지금 포커스에 키보드 입력(그리드 셀 · contenteditable)
+ *   node remote.js mouse <x> <y> [--dbl] [--watch=<ms>] [--tab=<sel>]  # click at coordinates (isTrusted). --watch collects writes, errors, dialogs and toasts
+ *   node remote.js mousetest [<x> <y>] [--tab=<sel>]                    # input liveness check: which mouse events actually arrived
+ *   node remote.js type <selector> <text> [--tab=<sel>]                 # uses the native setter (React compatible)
+ *   node remote.js keys <text> [--select-all] [--enter] [--tab=<sel>]   # keyboard input to the current focus (grid cell, contenteditable)
  *   node remote.js eval "<js expr>" [--tab=<sel>]
  *   node remote.js wait <selector> [--tab=<sel>] [--ms=10000]
- *   node remote.js attrs <selector> [--tab=<sel>]                       # DOM 속성 검사
- *   node remote.js collect [<ms>] [--tab=<sel>]                         # 콘솔 에러 + 네트워크 실패 수집 (기본 5000ms)
+ *   node remote.js attrs <selector> [--tab=<sel>]                       # inspect DOM attributes
+ *   node remote.js collect [<ms>] [--tab=<sel>]                         # collect console errors + network failures (default 5000ms)
  *   node remote.js close --tab=<sel>
- *   node remote.js workdir [--case=<slug>] [--clean]                    # 캡처 임시 폴더 경로 (--clean 으로 지움)
+ *   node remote.js workdir [--case=<slug>] [--clean]                    # capture temp folder path (--clean deletes it)
  *
- * 탭 선택: --tab=<idx> 인덱스 · --tab=<url부분> 부분 일치 · 없으면 마지막 탭
- * collect 권장값: 3000 정적 화면 · 5000 일반(기본) · 10000 자동 갱신/비동기 많은 화면
+ * Tab selection: --tab=<idx> index · --tab=<url part> partial match · none = last tab
+ * collect recommended values: 3000 static screen · 5000 general (default) · 10000 auto-refreshing / async-heavy screen
  *
- * shot 저장 위치 (스킬 폴더에는 쓰지 않는다):
- *   --case=<slug> : <임시>/use-browser/<slug>/shots/<name>.png (다 쓰면 workdir --case=<slug> --clean 으로 지움)
- *   미지정         : <임시>/use-browser/_scratch/<name>.png
- *   --cdp         : Page.captureScreenshot 직접(폰트 대기로 shot 이 30초 멈출 때, tool.md §24)
+ * shot save location (never written into the skill folder):
+ *   --case=<slug> : <temp>/use-browser/<slug>/shots/<name>.png (delete when done with workdir --case=<slug> --clean)
+ *   not given      : <temp>/use-browser/_scratch/<name>.png
+ *   --cdp         : Page.captureScreenshot directly (when shot stalls for about 30 s waiting for fonts)
  */
 const fs = require('fs');
 const path = require('path');
@@ -55,7 +55,7 @@ const EXTRA = {
         const [, name] = positional();
         if (!name) { console.error('Usage: shot <name> [--case=<slug>] [--full] [--clip=x,y,w,h] [--cdp]'); process.exit(1); }
         const page = pickPage(context, getOpt('tab'));
-        if (!page) { console.error('[ERR] 탭 없음'); process.exit(1); }
+        if (!page) { console.error('[ERR] No tab'); process.exit(1); }
         const slug = getOpt('case');
         const dir = slug ? path.join(workDir(slug), 'shots') : workDir();
         fs.mkdirSync(dir, { recursive: true });
@@ -88,7 +88,7 @@ const EXTRA = {
             }).catch(() => {});
         }
         const url = getOpt('url');
-        // F5 키는 CDP 로 새로고침이 안 된다 — Page.reload 를 쓴다
+        // The F5 key does not reload via CDP; use Page.reload
         if (url) await page.goto(url, { waitUntil: 'domcontentloaded' });
         else await cdp.send('Page.reload', { ignoreCache: hasFlag('hard') || hasFlag('nuke') });
         await page.waitForTimeout(parseInt(getOpt('ms', '3000'), 10));
@@ -135,7 +135,7 @@ const EXTRA = {
         const events = await page.evaluate(() => window.__ubEv);
         const alive = events.some(e => e.trusted);
         console.log(JSON.stringify({ alive, at: [x, y], hasFocus: await page.evaluate(() => document.hasFocus()), events }, null, 1));
-        if (!alive) console.error('[WARN] 실제 입력이 도달하지 않음 — 네이티브 탭 모달 의심. start.ps1 -Force (tool.md §26)');
+        if (!alive) console.error('[WARN] Real input did not arrive; suspect a native tab modal. start.ps1 -Force');
     },
 
     async keys(context) {
@@ -153,7 +153,7 @@ const EXTRA = {
 function workdirCmd() {
     const slug = getOpt('case');
     if (hasFlag('clean')) {
-        if (!slug) { console.error('[ERR] --clean 은 --case=<slug> 와 함께'); process.exit(1); }
+        if (!slug) { console.error('[ERR] --clean requires --case=<slug>'); process.exit(1); }
         const dir = workDir(slug);
         fs.rmSync(dir, { recursive: true, force: true });
         console.log(`[OK] removed ${dir}`);
@@ -163,7 +163,7 @@ function workdirCmd() {
 const COMMANDS = {
     async tabs(context) {
         const pages = context.pages();
-        console.log(`[INFO] 컨텍스트 ${context.browser().contexts().length}개, 탭 ${pages.length}개`);
+        console.log(`[INFO] ${context.browser().contexts().length} context(s), ${pages.length} tab(s)`);
         for (let i = 0; i < pages.length; i++) {
             const url = pages[i].url();
             const title = await pages[i].title().catch(() => '?');
@@ -178,7 +178,7 @@ const COMMANDS = {
         let page;
         if (hasFlag('new')) {
             page = await context.newPage();
-            console.log('[OK] 새 탭 생성');
+            console.log('[OK] new tab created');
         } else {
             page = pickPage(context, getOpt('tab'));
             if (!page) page = await context.newPage();
@@ -262,7 +262,7 @@ const COMMANDS = {
     async collect(context) {
         const ms = parseInt(positional()[1] || '5000', 10);
         const page = pickPage(context, getOpt('tab'));
-        if (!page) { console.error('[ERR] 탭 없음'); process.exit(1); }
+        if (!page) { console.error('[ERR] No tab'); process.exit(1); }
 
         const consoleErrors = [];
         const consoleWarnings = [];
@@ -342,12 +342,12 @@ const COMMANDS = {
     if (cmd === 'workdir') { workdirCmd(); return; }
     const browser = await connect();
     const context = browser.contexts()[0];
-    if (!context) { console.error('[ERR] 컨텍스트 없음'); process.exit(1); }
+    if (!context) { console.error('[ERR] No context'); process.exit(1); }
 
     try {
         await COMMANDS[cmd](context);
     } catch (e) {
-        console.error(`[ERR] ${cmd} 실패: ${e.message}`);
+        console.error(`[ERR] ${cmd} failed: ${e.message}`);
         process.exit(1);
     } finally {
         await browser.close().catch(() => {});

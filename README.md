@@ -32,6 +32,15 @@ A personal knowledge vault you grow topic by topic. Create as many topics as you
 | `vault-lint` | Checks dead pointers, INDEX mismatches, pasted bulk copies, stale and duplicate docs. |
 | `vault-session` | Writes a session record **per topic** (`history/<topic>/<person>/`), cross-linked when a session spans topics, so the next session can resume. |
 
+### How I use it
+
+The vault root is just a folder, so it fits more than one layout. I have used it in two ways:
+
+- **Under a client folder** - one vault per client (customer account), with that client's topics inside.
+- **Per project** - one vault per project, with the project's topics inside.
+
+Pick whichever matches how you already separate your work, and run the skills from that folder (or git repository).
+
 Install:
 
 ```

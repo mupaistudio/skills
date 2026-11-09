@@ -38,7 +38,7 @@ if (wrong.length === 0) {
   process.exit(0);
 }
 if (checkOnly) {
-  console.log(`DEPS_MISSING ${depsDir} — ${wrong.map(([n, v]) => `${n}@${v}`).join(' ')} (node ${path.basename(__filename)} 로 깐다)`);
+  console.log(`DEPS_MISSING ${depsDir} — ${wrong.map(([n, v]) => `${n}@${v}`).join(' ')} (install with: node ${path.basename(__filename)})`);
   process.exit(20);
 }
 
@@ -67,7 +67,7 @@ if (r.status !== 0) {
 }
 const still = Object.entries(pinned).filter(([name, ver]) => installedVersion(name) !== ver);
 if (still.length) {
-  console.log(`DEPS_FAILED — 설치 뒤에도 판이 맞지 않는다: ${still.map(([n, v]) => `${n}@${v}`).join(' ')}`);
+  console.log(`DEPS_FAILED — version still does not match after install: ${still.map(([n, v]) => `${n}@${v}`).join(' ')}`);
   process.exit(21);
 }
 console.log(`DEPS_INSTALLED ${depsDir}`);

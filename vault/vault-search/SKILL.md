@@ -1,30 +1,30 @@
 ---
 name: vault-search
-description: "지식창고(볼트)에서 찾는다 — '이게 뭐였지·규칙이 뭐였지·어디 있어' 조회와 새 사람 온보딩 요약. INDEX.md 로 주제 전체를 먼저 잡고 docs/ 를 뒤져 답과 근거 문서 경로를 준다. 볼트에 없으면 지어내지 않고 '없음'을 분명히 하고 vault-push/vault-ingest 를 제안한다. Search a personal knowledge vault and answer with source paths; never invent what is not there. Triggers: vault search, find in vault, 볼트 검색, 지식창고 검색, 이 문서 뭐지, 규칙 뭐였지, 어디 있어, 온보딩, 문서 찾아줘."
+description: "Search a personal knowledge vault and answer with source document paths: lookups like what was this, what was the rule, where is it, plus onboarding summaries for newcomers. Start from INDEX.md for the whole topic, then search docs/. If the vault has no answer, never invent one: state clearly that it is not there and suggest vault-push or vault-ingest. Triggers: vault search, search the vault, find in vault, what was that rule, where is it, onboarding, find the document."
 ---
 
-# 볼트 서치
+# Vault Search
 
-지식창고에서 답을 꺼낸다. 답과 함께 **근거 문서 경로**를 항상 준다.
+Pull answers out of the knowledge vault. Always give the **source document path** with the answer.
 
-## 입력
+## Input
 
-- **질문/키워드** — "환불 규칙이 뭐였지", "이 주제 문서 목록", "온보딩".
-- (선택) 주제 — 모르면 루트의 주제 폴더 이름들을 먼저 훑는다.
+- **Question or keyword**: "what was the refund rule", "list this topic's documents", "onboarding".
+- (Optional) Topic: if unknown, first skim the names of the topic folders at the root.
 
-## 절차
+## Steps
 
-1. **INDEX 먼저** — 대상 주제의 `INDEX.md` 로 전체 조망을 잡는다(문서 목록 · 상태 · 위치). 주제를 모르면 각 `<topic>/README.md` 첫 줄로 가린다.
-2. **본문 검색** — `<topic>/docs/` 를 grep 해 해당 절을 찾는다. 필요하면 `history/<topic>/` 도 보되, history 는 결정 전 내용이 섞여 있다고 밝힌다.
-3. **답 구성** — 답 + **근거 문서 경로** + 필요하면 5절 "원본 위치" 포인터.
-4. **없으면 없다고** — 볼트에 근거가 없으면 지어내지 않는다. "아직 없음"을 분명히 하고 남기려면 `vault-push` / `vault-ingest` 를 제안한다.
-5. **온보딩 요청**이면 해당 주제 `README.md` + `INDEX.md` 를 축으로 "무슨 주제 · 문서 지도 · 시작점"을 요약한다.
+1. **INDEX first**: get the overview from the target topic's `INDEX.md` (document list, status, location). If the topic is unknown, pick by the first line of each `<topic>/README.md`.
+2. **Search the body**: grep `<topic>/docs/` to find the relevant section. If needed also look at `history/<topic>/`, but say that history mixes in pre-decision content.
+3. **Compose the answer**: answer + **source document path** + the section 5 "Original location" pointer if relevant.
+4. **If it is not there, say so**: if the vault has no basis, do not invent. Make clear it is "not there yet" and suggest `vault-push` / `vault-ingest` to record it.
+5. **For an onboarding request**, summarize "what the topic is, the document map, where to start" around that topic's `README.md` + `INDEX.md`.
 
-## 산출
+## Output
 
-- 답 + 출처 경로. (온보딩은 요약 문서.)
+- Answer + source paths. (Onboarding gives a summary document.)
 
-## 원칙
+## Principles
 
-- 볼트는 포인터 저장소다 — 구현 세부가 필요하면 **원본 위치를 가리켜** 거기로 보낸다. 내용을 지어 답하지 않는다.
-- 읽기만 한다. 고치는 일은 `vault-ingest` 의 몫이다.
+- The vault is a pointer store: if implementation detail is needed, **point to the original location** and send the reader there. Never answer with invented content.
+- Read-only. Changing things is `vault-ingest`'s job.

@@ -1,143 +1,143 @@
 ---
 name: logical-verification
-description: "로지컬 씽킹 결과물의 MECE 원칙 준수 및 품질 체계적 검증. 트리거: MECE 검증, 로지컬 씽킹 품질 검사, 구조 검증, 중복/누락 점검, 분해 기준 일관성 확인"
+description: "Systematically verify a logical thinking result for MECE compliance and quality. Use when asked to verify MECE, check logical thinking quality, review structure, find duplicates or gaps, or confirm decomposition criterion consistency."
 ---
 
-# logical-verification [결과물_파일경로]
+# logical-verification [result_file_path]
 
-로지컬 씽킹 결과물을 MECE 원칙과 품질 기준으로 검증하여 리포트를 생성한다.
+Verify a logical thinking result against MECE principles and quality criteria, and produce a report.
 
-## 옵션
-- `--focus me|ce|structure|quality` (기본: 전체)
-- `--strict` (엄격 모드)
-- `--report detailed|summary` (기본: detailed)
+## Options
+- `--focus me|ce|structure|quality` (default: all)
+- `--strict` (strict mode)
+- `--report detailed|summary` (default: detailed)
 
-## 검증 5단계
+## Five Verification Steps
 
-### 1단계: 구조 분석
-- 최상위 목표 명확성
-- 뎁스별 분해 깊이 적절성
-- 브랜치 간 논리적 관계
+### Step 1: Structure Analysis
+- Clarity of the top-level goal
+- Appropriateness of decomposition depth at each level
+- Logical relationships between branches
 
-### 2단계: ME (상호배타성) 검증
+### Step 2: ME (Mutual Exclusivity) Check
 ```yaml
-질문:
-  - "각 브랜치가 서로 겹치는가?"
-  - "하나의 항목이 여러 브랜치에 속할 수 있는가?"
-  - "분해 기준이 형제 브랜치에서 일관되는가?"
+questions:
+  - "Do any branches overlap?"
+  - "Could one item belong to several branches?"
+  - "Is the decomposition criterion consistent across sibling branches?"
 
-위반 표시:
-  - (중복id01), (중복id02): 동일 내용
-  - 기준 불일치: 분해 기준 혼재 지점
+violation markers:
+  - (duplicate id01), (duplicate id02): identical content
+  - criterion mismatch: point where decomposition criteria are mixed
 
-통과 조건:
-  - 항목이 2개+ 브랜치에 속하지 않음
-  - 브랜치 경계가 명확
-  - 동일 분해 기준 일관 적용
+pass conditions:
+  - No item belongs to 2+ branches
+  - Branch boundaries are clear
+  - The same decomposition criterion is applied consistently
 ```
 
-### 3단계: CE (완전망라성) 검증
+### Step 3: CE (Collective Exhaustiveness) Check
 ```yaml
-질문:
-  - "모든 경우를 다뤘는가?"
-  - "빠진 영역이 있는가?"
-  - "새로운 하위 항목 가능성은?"
+questions:
+  - "Are all cases covered?"
+  - "Is any area missing?"
+  - "Could new sub-items appear?"
 
-누락 표시:
-  - (누락): 빠진 내용
-  - 집합 유형 판단: 닫힌 vs 열린
-  - 열린 집합에서 "기타" 브랜치 필요성
+gap markers:
+  - (gap): missing content
+  - set type judgment: closed vs open
+  - need for an "Other" branch in open sets
 
-통과 조건:
-  - 모든 영역 포함
-  - 닫힌 집합: 논리적 완전 정의
-  - 열린 집합: "기타"로 확장성 보장
+pass conditions:
+  - All areas included
+  - Closed set: logically complete definition
+  - Open set: extensibility guaranteed by "Other"
 ```
 
-### 4단계: 품질 기준 평가
+### Step 4: Quality Criteria Evaluation
 ```yaml
-구조 품질:
-  - 동일 기준 원칙 준수
-  - 중복 없음
-  - 누락 없음
-  - 확장성
+structure quality:
+  - Same-criterion principle followed
+  - No duplicates
+  - No gaps
+  - Extensibility
 
-내용 품질:
-  - 상위 목표 기여도
-  - 실행 가능성
-  - 완료 조건 명확성
+content quality:
+  - Contribution to the top-level goal
+  - Feasibility
+  - Clarity of completion conditions
 
-실용성:
-  - 팀 이해도
-  - 관리 용이성
-  - 구조 유지성
+practicality:
+  - Team understanding
+  - Ease of management
+  - Structure maintainability
 ```
 
-### 5단계: 원자적 Task 검증
-- 1-3일 완료 가능한 크기인가?
-- 독립적 실행 가능한가?
-- 성공/실패 판단 기준 있는가?
+### Step 5: Atomic Task Check
+- Is it small enough to complete in 1-3 days?
+- Can it be executed independently?
+- Does it have pass/fail criteria?
 
-## 점수 체계
+## Scoring
 ```yaml
-A (90-100): MECE 완벽, 즉시 활용 가능
-B (80-89): 대부분 충족, 경미한 개선
-C (70-79): 기본 충족, 중간 개선 필요
-D (60-69): 일부 미충족, 상당한 개선
-F (<60): 대부분 미충족, 재작업 필요
+A (90-100): perfect MECE, ready to use immediately
+B (80-89): mostly met, minor improvements
+C (70-79): basics met, moderate improvements needed
+D (60-69): partly unmet, substantial improvements needed
+F (<60): mostly unmet, rework required
 
-필수 통과: ME 위반 0개, CE 누락 0개, 총점 80+
+required to pass: 0 ME violations, 0 CE gaps, total score 80+
 ```
 
-## 리포트 템플릿
+## Report Template
 
-파일명: `verification_report_[주제명].md`
+File name: `verification_report_[topic_name].md`
 
 ```markdown
-# [주제명] 검증 리포트
+# [Topic Name] Verification Report
 
-## 개요
-- 대상: [파일명]
-- 전체 평가: [A-F]
+## Overview
+- Target: [file name]
+- Overall grade: [A-F]
 
-## 구조 분석
-- 목표 명확성: [평가]
-- 분해 기준: [기준명] — [평가]
+## Structure Analysis
+- Goal clarity: [assessment]
+- Decomposition criterion: [criterion name] - [assessment]
 
-## ME (상호배타성) — [통과/위반]
-### 위반사항
-- [중복 항목]: [내용] → [위치]
+## ME (Mutual Exclusivity) - [Pass/Violation]
+### Violations
+- [Duplicate item]: [content] -> [location]
 
-### 개선안
-- [방법]
+### Improvements
+- [Method]
 
-## CE (완전망라성) — [통과/위반]
-### 누락사항
-- [누락 영역]: [내용] → [추가 위치]
+## CE (Collective Exhaustiveness) - [Pass/Violation]
+### Gaps
+- [Missing area]: [content] -> [where to add]
 
-### 개선안
-- [방법]
+### Improvements
+- [Method]
 
-## 품질 점수
-- 구조: __/100
-- 내용: __/100
-- 실용성: __/100
+## Quality Score
+- Structure: __/100
+- Content: __/100
+- Practicality: __/100
 
-## 개선 로드맵
-### 우선순위 1 (즉시)
-- 문제 → 영향도 → 해결방안
+## Improvement Roadmap
+### Priority 1 (immediate)
+- Problem -> impact -> solution
 
-### 우선순위 2 (단기)
-- 문제 → 해결방안
+### Priority 2 (short term)
+- Problem -> solution
 
-## 재검증 체크리스트
-- [ ] ME 위반 해결
-- [ ] CE 누락 보완
-- [ ] 품질 80점+ 달성
-- [ ] 원자적 Task 기준 충족
+## Re-verification Checklist
+- [ ] ME violations resolved
+- [ ] CE gaps filled
+- [ ] Quality score 80+ reached
+- [ ] Atomic task criteria met
 ```
 
-## 연계
-- 품질 게이트: `logical-think` → `logical-verification` → 통과 후 다음 단계
-- 개선 사이클: verification → 수정 → re-verification
-- 선행 확인: verification → `logical-tree` 또는 `logical-csv`
+## Related Skills
+- Quality gate: `logical-think` -> `logical-verification` -> proceed only after passing
+- Improvement cycle: verification -> revise -> re-verification
+- Pre-check: verification -> `logical-tree` or `logical-csv`

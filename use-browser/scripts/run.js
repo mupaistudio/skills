@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 /**
- * use-browser scripts/run.js — 기준 실행기. 여러 단계 시나리오를 step 파일로 돌리고 관찰 결과를 남긴다.
+ * use-browser scripts/run.js — reference runner. Runs a multi-step scenario from a step file and records what it observed.
  *
- * 사용: node run.js <step.js> [--case=<slug>] [--tab=<sel>] [--accept-dialogs]
- *   step.js = `module.exports = async (H) => { ... return 결과 }`
+ * Usage: node run.js <step.js> [--case=<slug>] [--tab=<sel>] [--accept-dialogs]
+ *   step.js = `module.exports = async (H) => { ... return result }`
  *   H = { page, cdp, context, wait, front, shot, mouse, clickAt, dragTo, key, type, ime, ev, S, mark, DIR }
- *   - mark('단계 이름') 뒤에 생긴 쓰기 · 오류 · 대화상자는 그 단계로 묶인다
- *   - shot(name, clip?) = Page.captureScreenshot 직접(30초 멈춤 없음) → <DIR>/shots/<name>.png
- * 결과: <DIR>/diagnostics/<step 이름>.json (비밀값 가림) + 표준 출력(MAXOUT 글자, 기본 12000)
- *   DIR = <임시>/use-browser/<slug>. 필요한 것은 references/cases 로 옮기고 지운다.
- * 쓰기 감시: POST/PUT/PATCH/DELETE 를 S.writes 에 적는다(막지 않음 — 쓰기 범위는 의뢰 · 정책이 정한다).
+ *   - writes, errors and dialogs after mark('step name') are grouped under that step
+ *   - shot(name, clip?) = Page.captureScreenshot directly (no 30 s stall) → <DIR>/shots/<name>.png
+ * Result: <DIR>/diagnostics/<step name>.json (secrets masked) + stdout (MAXOUT chars, default 12000)
+ *   DIR = <temp>/use-browser/<slug>. Move what you need to references/cases, then delete it.
+ * Write watch: POST/PUT/PATCH/DELETE are logged to S.writes (not blocked; the write scope is set by the request or policy).
  *
- * 옛 실행기(기록에 runner 로 붙은 것)도 이 파일로 불러 돌릴 수 있게, require('playwright' | 'playwright-core') 를
- * 플러그인의 고정 판(lib/pw.js)으로 돌려준다:  node run.js --legacy <옛 실행기.js> [인자…]
+ * So that old runners (attached to records as a runner) can also be run through this file, require('playwright' | 'playwright-core')
+ * is redirected to the plugin's pinned copy (lib/pw.js):  node run.js --legacy <old-runner.js> [args...]
  */
 const Module = require('module');
 const fs = require('fs');
 const path = require('path');
 
 const PW = require.resolve('./lib/pw');
-require(PW); // 가로채기 전에 진짜 playwright-core 를 한 번 읽어 캐시에 둔다(pw.js 자신의 require 와 순환 방지)
+require(PW); // Load the real playwright-core once before intercepting so it is cached (avoids a cycle with pw.js's own require)
 const origResolve = Module._resolveFilename;
 Module._resolveFilename = function (request, ...rest) {
     if (request === 'playwright' || request === 'playwright-core') return PW;
@@ -34,7 +34,7 @@ const pos = argv.filter(a => !a.startsWith('--'));
 
 if (argv[0] === '--legacy') {
     const file = path.resolve(argv[1] || '');
-    if (!argv[1]) { console.error('Usage: run.js --legacy <옛 실행기.js> [인자…]'); process.exit(1); }
+    if (!argv[1]) { console.error('Usage: run.js --legacy <old-runner.js> [args...]'); process.exit(1); }
     process.argv = [process.argv[0], file, ...argv.slice(2)];
     require(file);
     return;
@@ -74,7 +74,7 @@ if (argv[0] === '--legacy') {
             return name + '.png';
         } catch (e) { return 'ERR ' + e.message; }
     };
-    // 실제 입력(isTrusted) — Input.dispatchMouseEvent
+    // Real input (isTrusted) via Input.dispatchMouseEvent
     const mouse = (type, x, y, b = 0, extra = {}) => cdp.send('Input.dispatchMouseEvent', {
         type, x, y, button: type === 'mouseMoved' ? (b ? 'left' : 'none') : 'left', buttons: b,
         clickCount: type === 'mouseMoved' ? 0 : (extra.clickCount || 1), modifiers: extra.modifiers || 0,
@@ -109,7 +109,7 @@ if (argv[0] === '--legacy') {
         if (w) await wait(w);
     };
     const type = async (text, delay = 40) => { for (const ch of text) { await cdp.send('Input.insertText', { text: ch }); await wait(delay); } };
-    // 한글 조합 흉내: imeSetComposition 으로 조합 중 글자를 거쳐 insertText 로 확정
+    // Simulate Korean IME composition: go through in-progress characters with imeSetComposition, commit with insertText
     const ime = async (steps, finalText, delay = 120) => {
         for (const s of steps) { await cdp.send('Input.imeSetComposition', { text: s, selectionStart: s.length, selectionEnd: s.length }); await wait(delay); }
         await cdp.send('Input.insertText', { text: finalText }); await wait(delay);

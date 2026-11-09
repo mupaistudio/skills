@@ -1,6 +1,6 @@
-# 작업 기록 색인
+# Case index
 
-같은 사이트 · 같은 작업을 시작하기 전에 여기서 먼저 찾는다. 작업이 끝나면 `cases/<날짜>_<슬러그>.md` 를 쓰고 아래 표에 한 줄 더한다.
+Before starting, look here first for the same site and task. When the work is done, write `cases/<date>_<slug>.md` and add one line to the table below.
 
-| 날짜 | 사이트 · 작업 | 파일 | 결론 한 줄 |
+| Date | Site / task | File | One-line conclusion |
 |---|---|---|---|

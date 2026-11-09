@@ -53,96 +53,96 @@ When a high-level numbered item is not atomic, split it into smaller execution u
 ### `scope_[unit].md`
 
 ```markdown
-# [Unit Name] - 범위 정의
+# [Unit Name] - Scope Definition
 
-## 실행 단위 목표
+## Execution Unit Goal
 **[Goal extracted from the logical thinking result]**
 
-## 원본 추적
-- 원본 번호: [number]
-- 원본 제목: [title]
+## Source Traceability
+- Source number: [number]
+- Source title: [title]
 
-## 범위 경계
-### 포함 사항
+## Scope Boundary
+### In Scope
 - [Items handled in this unit]
 
-### 제외 사항
+### Out of Scope
 - [Items handled by other units]
 
-## 의존관계
-- 선행: [Conditions required before starting]
-- 후속: [Work enabled after completion]
+## Dependencies
+- Prerequisites: [Conditions required before starting]
+- Follow-ups: [Work enabled after completion]
 
-## 완료 기준
+## Completion Criteria
 - [Measurable success condition]
 
-## 추정
-- 예상 시간: [1-3일]
-- 복잡도/리스크: [Low|Medium|High]
+## Estimate
+- Expected time: [1-3 days]
+- Complexity/risk: [Low|Medium|High]
 ```
 
 ### `status_analysis_[unit].md`
 
 ```markdown
-# [Unit Name] - 현황 분석
+# [Unit Name] - Status Analysis
 
-## 현재 상태
-- 기존 구현: [Related function/code]
-- 환경 준비: [Tools and dependencies]
+## Current State
+- Existing implementation: [Related function/code]
+- Environment readiness: [Tools and dependencies]
 
-## 제약사항
-- 기술적: [Stack, performance, security]
-- 의존성 블로커: [External system/team blockers]
+## Constraints
+- Technical: [Stack, performance, security]
+- Dependency blockers: [External system/team blockers]
 
-## 준비도
-- 기술: __%
-- 리소스: __%
-- 의존성: __%
+## Readiness
+- Technical: __%
+- Resources: __%
+- Dependencies: __%
 ```
 
 ### `final_design_[unit].md`
 
 ```markdown
-# [Unit Name] - 최종 설계
+# [Unit Name] - Final Design
 
-## 아키텍처
-- 구조: [Components/modules]
-- 기술 스택: [Libraries/frameworks]
-- 데이터: [Models/APIs]
+## Architecture
+- Structure: [Components/modules]
+- Tech stack: [Libraries/frameworks]
+- Data: [Models/APIs]
 
-## 구현 순서
+## Implementation Order
 1. [Step]
 2. [Step]
 
-## 리스크 대응
+## Risk Response
 - [Expected risk] -> [Response plan]
 ```
 
 ### `execution_[unit].md`
 
 ```markdown
-# [Unit Name] - 실행 기록
+# [Unit Name] - Execution Record
 
-## 상태: 준비
-- 시작일: YYYY-MM-DD
-- 완료일: YYYY-MM-DD
+## Status: Ready
+- Start date: YYYY-MM-DD
+- End date: YYYY-MM-DD
 
-## 진행 체크리스트
+## Progress Checklist
 - [ ] [Task item]
 
-## 실행 로그
+## Execution Log
 ### [Date]
 - [Work performed and result]
 
-## 이슈
-- 문제: -> 원인: -> 해결: -> 학습:
+## Issues
+- Problem: -> Cause: -> Fix: -> Lesson:
 ```
 
 ## Workset Controller
 
 Use `workset_controller` to summarize:
 
-- 전체 실행 목표
+- Overall execution goal
 - execution units list
 - cross-unit dependency order
 - integration risks

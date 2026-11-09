@@ -13,7 +13,7 @@ try {
   module.exports = createRequire(path.join(depsDir, 'package.json'))('playwright-core');
 } catch (e) {
   const err = new Error(
-    `playwright-core 를 찾지 못했다 (${depsDir}). 먼저: node ${path.join(__dirname, '..', 'ensure-deps.js')}`);
+    `playwright-core not found (${depsDir}). Run first: node ${path.join(__dirname, '..', 'ensure-deps.js')}`);
   err.code = 'USE_BROWSER_DEPS_MISSING';
   throw err;
 }

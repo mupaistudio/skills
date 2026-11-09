@@ -1,33 +1,33 @@
 ---
 name: vault-ingest
-description: "대기소·자료의 원재료를 지식창고(볼트)의 제자리 문서로 정리·통합한다 — topic/_inbox/ 항목(우선), 붙여넣은 글, 대화에서 확정된 결정, 산출물을 읽어 어느 주제·어느 문서에 속하는지 가르고, 문서가 없으면 규약 템플릿(6절)으로 만들고 INDEX 한 줄을 더하며, 있으면 맞는 절에 병합한다. 긴 코드·원문은 위치(포인터)로만. 정리 끝난 _inbox 항목은 지운다. Organize and merge raw material from a topic's _inbox into proper documents of a personal knowledge vault. Triggers: vault ingest, organize inbox, 인제스트, 대기소 정리, _inbox 비우기, 지식 통합, 문서화, INDEX 반영."
+description: "Organize and merge raw material from the inbox or other sources into proper documents of a personal knowledge vault: read topic/_inbox/ items (first priority), pasted text, decisions settled in conversation and work products, decide which topic and document each belongs to, create the document from the convention's six-section template if missing and add one INDEX line, or merge into the right section if it exists. Long code and originals go in by location (pointer) only. Delete inbox items once organized. Triggers: vault ingest, organize the inbox, empty the inbox, merge knowledge, write it up as a document, update INDEX."
 ---
 
-# 볼트 인제스트
+# Vault Ingest
 
-대기소·자료의 원재료를 **제자리 문서로 정리·통합**한다. 새 문서를 만드는 것도, 기존 문서에 병합하는 것도 여기 몫이다. 구조 · 문서 템플릿의 단일 출처는 루트 `CLAUDE.md` — 값을 여기에 베끼지 말고 그 문서를 연다.
+Organize and merge raw material from the inbox or other sources **into proper documents.** Creating a new document and merging into an existing one are both its job. The single source for structure and the document template is the root `CLAUDE.md`; open that document instead of copying values here.
 
-## 입력
+## Input
 
-- **소스** — `<topic>/_inbox/` 의 대기 항목(우선), 붙여넣은 텍스트, 대화에서 확정된 결정, 작업 산출물.
-- (선택) 대상 힌트 — 어느 주제 · 어느 문서인지.
+- **Source**: pending items in `<topic>/_inbox/` (first priority), pasted text, decisions settled in conversation, work products.
+- (Optional) Target hint: which topic and document.
 
-## 절차
+## Steps
 
-1. **소스 읽기** — 무엇이 사실(규칙 · 결정 · 이력)이고 무엇이 잡음(추측 · 시행착오 · 구현 세부)인지 가른다. 확정된 것만 볼트 문서로 간다.
-2. **귀속 판별** — 어느 주제 · 어느 문서에 속하나. 한 주제 안에서 같은 문서가 이미 있나 먼저 본다.
-3. **제자리 문서 확보** — 문서가 없으면 `CLAUDE.md` 의 6절 템플릿으로 `<topic>/docs/<문서>.md` 를 만들고 `INDEX.md` 에 한 줄을 더한다. **주제 폴더가 없으면** 먼저 `vault-provision` 을 하라고 알린다.
-4. **절에 통합** — 맞는 절(핵심 내용 · 근거 · 연결 · 원본 위치)에 넣는다. **긴 코드 · 데이터 · 원문은 복사하지 말고 위치로 가리킨다.**
-5. **병합 우선** — 같은 주제 문서가 있으면 새로 만들지 말고 합친다(중복 금지).
-6. **이력 · INDEX 갱신** — 6절 이력에 `날짜 — 무엇을 왜`, 상태가 바뀌었으면 INDEX 한 줄도 갱신한다.
-7. **대기소 비우기** — 항목이 `_inbox/` 에서 왔으면 통합이 끝난 파일을 지운다. 지우기 전에 어디에 넣었는지 보고한다.
-8. **비밀 · 개인정보** — 원재료에 토큰 · 비밀번호 · 전화번호 · 계좌가 있으면 문서에 옮기지 않고 자리만 적는다.
+1. **Read the source**: separate what is fact (rules, decisions, history) from noise (guesses, trial and error, implementation detail). Only what is settled goes into vault documents.
+2. **Decide where it belongs**: which topic and which document. First check whether the same document already exists within the topic.
+3. **Secure the document**: if there is none, create `<topic>/docs/<document>.md` from the six-section template in `CLAUDE.md` and add one line to `INDEX.md`. **If the topic folder does not exist**, tell the user to run `vault-provision` first.
+4. **Integrate into sections**: put it in the right section (key content, evidence, connections, original location). **Do not copy long code, data or original text; point to its location.**
+5. **Merge first**: if a document on the same subject exists, merge instead of creating a new one (no duplicates).
+6. **Update history and INDEX**: add `date: what and why` to the history section (section 6), and update the INDEX line too if the status changed.
+7. **Empty the inbox**: if the item came from `_inbox/`, delete the file once integration is done. Report where it went before deleting.
+8. **Secrets and personal data**: if the raw material contains tokens, passwords, phone numbers or bank accounts, do not carry them into the document; write only where they are.
 
-## 산출
+## Output
 
-- 정리 · 통합된 문서(+ 필요하면 새 문서 · INDEX) · 비워진 대기소.
+- Organized and merged documents (plus a new document and INDEX line if needed) and an emptied inbox.
 
-## 원칙
+## Principles
 
-- **원본은 한 곳** — 정리는 지식을 제자리에 세우는 일이지 원본을 복제하는 일이 아니다.
-- **결정된 것만** — 결정 전의 것은 문서에 넣지 않고 `_inbox` 에 두거나 history 에 둔다.
+- **One home for the original**: organizing means setting knowledge in its place, not duplicating the original.
+- **Only what is decided**: anything undecided stays in `_inbox` or goes to history, not into documents.

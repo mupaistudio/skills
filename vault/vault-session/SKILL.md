@@ -1,220 +1,221 @@
 ---
 name: vault-session
-description: "세션이 한 일을 지식창고(볼트)의 history/주제/사람ID/ 에 기록으로 남긴다 — 히스토리이자 다음 세션이 이어받는 연결고리이고, 함께 걸린 다른 주제와 잇는 연결고리다. 한 세션이 여러 주제에 걸치면 주제마다 그 주제에 필요한 요약을 따로 쓰고, 기록끼리 서로 가리키게(세션 ID · 작업 폴더 · 상대 기록 경로) 한다. 볼트는 결정된 것만 담고, 히스토리는 일어난 일 · 미완 · 다음 할 일을 담는다. 기록은 비밀·개인정보 검사 뒤 git 에 올린다. Write a per-topic session record into a personal knowledge vault (history/topic/person/), linked across topics, so the next session can resume. Triggers: vault session, save session, session log, handoff, 세션 저장, 세션 기록, 세션 연결, 세션 마무리, 작업 기록 저장, 히스토리 남겨, 다음 세션에 넘기기, 내일 이어서 하자."
+description: "Write what a session did as a per-topic record in a personal knowledge vault (history/topic/person-id/): a history, a hand-off link the next session resumes from, and a link to other topics involved. If one session spans several topics, write a separate summary per topic with what that topic needs, and make the records point to each other (session ID, working folder, path of the sibling record). The vault holds only what is decided; history holds what happened, what is unfinished and what is next. Records are checked for secrets and personal data before going into git. Triggers: vault session, save session record, session log, hand off to next session, wrap up the session, save work history, continue tomorrow."
 ---
 
-# 볼트 세션 (히스토리 · 연결고리)
+# Vault Session (history and hand-off link)
 
-세션이 한 일을 **주제별로 나눠** 기록으로 남긴다. 기록은 세 가지 일을 한다.
+Record what the session did, **split by topic.** A record does three jobs.
 
-- **히스토리** — 무엇을 왜 했고, 무엇이 남았나.
-- **다음 작업의 연결고리** — 다음 세션이 이 기록 하나로 이어받는다.
-- **다른 주제와의 연결고리** — A 주제의 일이 B 와 걸리면 A · B 에 **각각** 기록을 남기고 서로 가리킨다.
+- **History**: what was done and why, and what remains.
+- **Hand-off link for the next work**: the next session resumes from this one record.
+- **Link to other topics**: if work in topic A touches B, leave a record in each of A and B and have them point to each other.
 
-같은 요약을 두 군데 쓰는 것이 아니라 **주제마다 그 주제에 필요한 요약**을 쓴다. 다만 연결고리(세션 ID · 상대 기록 경로)는 모두 가져간다. 이것이 핵심이다.
+This is not writing the same summary in two places; you write **the summary each topic needs.** But the links (session ID, path of the sibling record) go into all of them. That is the core.
 
-**볼트와의 경계** — 볼트 문서(`<topic>/README` · `docs/` …)에는 정확히 결정된 것만 들어간다. history 는 기록이라 결정 전의 것 · 미완 · 시행착오가 함께 있다. 기록 속 결정을 볼트로 올리는 길은 Step 7(대기소 `_inbox`)뿐이다.
+**Boundary with the vault**: vault documents (`<topic>/README`, `docs/`, ...) contain only what is exactly decided. History is a record, so pre-decision content, unfinished work and trial and error sit together. The only route from a decision in a record to the vault is Step 7 (the `_inbox`).
 
-요약에는 코드에서 파생되지 않는 것을 남긴다 — **왜 그렇게 했나, 무엇이 미완이고 다음에 무엇을 하나.** 무엇을 바꿨는지는 git 이 이미 안다. 다음 세션이 자기 의제로 새지 않도록 「목적」 한 줄을 앞에 둔다.
+In the summary, keep what cannot be derived from the code: **why it was done that way, what is unfinished and what comes next.** What changed is already known to git. Put a one-line "Purpose" first so the next session does not drift into its own agenda.
 
-## 자리
+## Location
 
 ```
-<루트>/history/<주제>/<사람ID>/YY-MM-DD_연번_제목.md
+<root>/history/<topic>/<person-id>/YY-MM-DD_NN_title.md
 ```
 
-- **주제** = 루트에 있는 주제 폴더(README.md 가 있는 폴더) 이름 그대로. 폴더가 없는 주제는 기록하지 않고 `vault-provision` 을 먼저 하라고 알린다.
-- **순서는 주제 → 사람.** 연결고리는 주제끼리 걸리고, 사람은 그 안에서 나뉜다.
-- **사람마다 자기 폴더에 새 파일만 더한다.** 덮어쓰지 않으면 여러 세션이 같은 저장소를 써도 부딪치지 않는다.
-- **볼트 밖 저장소에는 쓰지 않는다.** 경로로 가리키는 것은 된다.
+- **Topic** = the name of a topic folder at the root (a folder that has README.md), exactly. For a topic with no folder, do not record; tell the user to run `vault-provision` first.
+- **Order is topic then person.** Links connect topics, and people are split within each.
+- **Each person only adds new files to their own folder.** Never overwrite, so several sessions can use the same repository without colliding.
+- **Never write to a repository outside the vault.** Pointing to one by path is fine.
+- `NN` is the sequence number of that day's records in that person folder (01, 02, ...).
 
-## Step 1: 이 세션 — 세션 ID · 작업 폴더 · 사람 ID
+## Step 1: This session (session ID, working folder, person ID)
 
 ```bash
-SID="${CLAUDE_CODE_SESSION_ID:-}"                                    # 이 세션 ID
-J=$(ls ~/.claude/projects/*/"$SID".jsonl 2>/dev/null | head -1)       # 대화 기록 파일
+SID="${CLAUDE_CODE_SESSION_ID:-}"                                    # this session's ID
+J=$(ls ~/.claude/projects/*/"$SID".jsonl 2>/dev/null | head -1)       # conversation log file
 WORKDIR=$(python3 -c 'import json,sys
 for l in open(sys.argv[1],encoding="utf-8"):
     try: c=json.loads(l).get("cwd")
     except Exception: continue
-    if c: print(c); break' "$J" 2>/dev/null)                          # 세션을 연 폴더
+    if c: print(c); break' "$J" 2>/dev/null)                          # folder the session was opened in
 [ -n "$WORKDIR" ] || WORKDIR="$PWD"
-ROOT=$(git -C "$WORKDIR" rev-parse --show-toplevel 2>/dev/null || echo "$WORKDIR")   # 볼트 루트
+ROOT=$(git -C "$WORKDIR" rev-parse --show-toplevel 2>/dev/null || echo "$WORKDIR")   # vault root
 ```
 
-- **세션 ID 는 환경변수에서 읽는다.** 폴더를 보고 추측하지 않는다. 없으면 「세션 ID 확인 안 됨」으로 적는다. (Windows 에서 `python3` 가 없으면 `python` 을 쓴다.)
-- **작업 폴더는 세션을 연 폴더다.** 대화 기록이 그 폴더 이름 아래에 저장되므로 복원할 때도 그 폴더에서 열어야 한다.
-- **사람 ID** — 환경변수 `VAULT_USER` → 없으면 `git config user.name` 을 slug 로 → 그것도 없으면 한 번 묻는다.
-- `ROOT` 에 `CLAUDE.md`(구조 규약)와 주제 폴더가 없으면 멈추고 `vault-provision` 을 안내한다.
+- **Read the session ID from the environment variable.** Do not guess from folders. If missing, write "session ID not confirmed". (On Windows, use `python` if `python3` is missing.)
+- **The working folder is the folder the session was opened in.** The conversation log is stored under that folder's name, so it must be opened from that folder to restore it.
+- **Person ID**: environment variable `VAULT_USER`, else `git config user.name` as a slug, else ask once.
+- If `ROOT` has no `CLAUDE.md` (the structure convention) and no topic folders, stop and point to `vault-provision`.
 
-## Step 2: 이 세션이 닿은 주제
+## Step 2: Topics this session touched
 
-이 세션에서 바꾼 파일의 경로와 대화로 주제를 고른다.
+Pick topics from the paths of the files changed in this session and from the conversation.
 
-| 경로 | 주제 |
+| Path | Topic |
 |---|---|
-| `<주제>/…` | 그 주제 |
-| 루트 공통 자리만(`CLAUDE.md` · 도구 설정 …) | 사용자에게 한 번 묻는다 |
+| `<topic>/...` | that topic |
+| Only shared root places (`CLAUDE.md`, tool settings, ...) | ask the user once |
 
-- **주 주제** — 일의 중심. 전체 요약을 쓴다.
-- **연결 주제** — 그 주제가 알아야 할 것이 **실제로 생긴 곳만**(무엇이 넘어왔나 · 거기에 무엇이 걸려 있나 · 그쪽 몫의 결정). 이름만 나온 곳은 넣지 않는다 — 관계가 있다는 것이 남길 것이 있다는 뜻은 아니다.
-- **앞 기록** — 이 세션이 시작할 때 이어받은 history 기록이 있으면 적어 둔다.
+- **Main topic**: the center of the work. Write the full summary.
+- **Linked topics**: only where something that topic needs to know **actually arose** (what came over, what is pending there, decisions that are that side's to make). Do not include places that were merely named; being related does not mean there is something to record.
+- **Previous record**: if a history record was inherited when this session started, note it.
 
-## Step 3: 연번 · 파일 이름
+## Step 3: Sequence number and file name
 
-주제마다 자기 폴더 안에서 센다.
+Count per topic within its own folder.
 
 ```bash
-ls "$ROOT/history/<주제>/<ID>/$(date +%y-%m-%d)"_* 2>/dev/null | wc -l   # +1 이 연번
+ls "$ROOT/history/<topic>/<ID>/$(date +%y-%m-%d)"_* 2>/dev/null | wc -l   # +1 is the sequence number
 ```
 
-파일 이름은 `YY-MM-DD_연번_제목.md` — 제목은 핵심 낱말을 하이픈으로 잇는다. 제목은 주제마다 그 기록의 내용으로 따로 짓는다. 폴더가 없으면 만든다. **파일 이름은 모두 먼저 정해 두면** 양쪽 경로를 한 번에 쓸 수 있다.
+The file name is `YY-MM-DD_NN_title.md`; the title joins key words with hyphens. Choose the title separately per topic from that record's content. Create the folder if missing. **Settle all file names first** so both sides' paths can be written at once.
 
-## Step 4: 작업 상태 스냅샷
+## Step 4: Work state snapshot
 
-다음 세션이 「지금 어디까지 됐나」를 바로 알도록 찍어 둔다.
+Capture it so the next session immediately knows "how far did it get".
 
-1. **볼트 git** — 이 세션의 변경이 커밋까지 갔나:
+1. **Vault git**: did this session's changes reach a commit?
    ```bash
    git -C "$ROOT" status -sb | head -1; git -C "$ROOT" log --oneline -3
    ```
-   작업 트리에 이 세션이 만들지 않은 변경이 있으면 「주인 모름 — 담지 않음」으로 적는다. 다른 세션 것이라고 단정하지 않는다.
-2. **다른 저장소** — 이 세션이 다른 저장소를 읽거나 쓴 경우만, 그 저장소의 `status -sb` · `log --oneline -3`. 고치지 않는다.
-3. **남은 일** — 해당 주제 `_inbox/` 에 남은 항목, 걸려 있는 할 일 목록.
+   If the working tree has changes this session did not make, write "owner unknown, not included". Do not assume they belong to another session.
+2. **Other repositories**: only if this session read or wrote another repository, its `status -sb` and `log --oneline -3`. Do not modify it.
+3. **Remaining work**: items left in that topic's `_inbox/`, and pending to-do lists.
 
-## Step 5: 요약 작성
+## Step 5: Write the summary
 
-### 주 주제 기록
+### Main topic record
 
-이 틀을 채운다. 빈 섹션은 「해당 없음」으로 둔다 — 섹션이 없는 것과 「확인했고 없음」을 다음 세션이 가를 수 있게.
-
-```markdown
-# 세션 기록: [핵심 주제 한 줄]
-
-## 연결
-- **이 기록**: history/<주제>/<ID>/<파일> — 주
-- **이 세션**: `<세션 ID>` · 작업 폴더 `<WORKDIR>`
-- **같은 세션의 다른 기록**: history/<주제2>/<ID>/<파일> — 그쪽 몫 한 줄 (없으면 「없음」)
-- **앞 기록**: history/<주제>/<ID>/<파일> — 이어받은 것 (없으면 「없음」)
-- **다른 저장소**: 경로 (없으면 「없음」)
-
-## 세션 정보
-- **날짜**: YYYY-MM-DD
-- **주제**: <주제> (사람 <ID>)
-- **세션 복원**: `cd '<WORKDIR>' && claude --resume '<세션 ID>'`
-
-## 목적 (Why)
-무엇을 가능하게 하려는가 — 변경 자체가 아니라 그 너머의 목표 한 줄.
-
-## 목표 (Outcome)
-세션 끝에 확인할 수 있는 결과(파일 · 링크 · 데이터 상태).
-
-## 단기 목표 (Next Action)
-다음 세션이 바로 착수할 1~3개. 분석이 아니라 행동.
-- [ ] ...
-
-## 작업 요약
-한 일 3~7개.
-
-## 성공 내용
-실제로 해결 · 확인된 것과 「왜 이렇게 했나」. 확인은 값으로 적는다(되읽은 값). 「했다」는 주장이고 「되읽어 보니 X 였다」가 값이다.
-
-## 결정 사항
-- 사용자 결정은 **원문 그대로** 인용한다. 제안(해석)은 「해석:」으로 따로 적는다.
-- 내 판단으로 정한 것은 「내 판단(보고함)」으로 가른다.
-
-## 교훈
-삽질 · 실수 · 재발 방지 — 코드로 해결되지 않는 판단 차원.
-
-## 제약조건 · 발견한 문제
-도구 · 환경 · 외부 제약, 미해결 문제(증상 · 추정 원인 · 처리).
-
-## 현재 상태
-완료 / 진행중 / 보류.
-
-## 작업 상태 (Step 4 스냅샷)
-- 볼트 git:
-- 다른 저장소:
-- 남은 일:
-
-## 다음 세션에서 할 일 (백로그)
-단기 목표와 별개로 언젠가 할 일.
-
-## 세션 복원
-cd '<WORKDIR>' && claude --resume '<세션 ID>'
-```
-
-### 연결 주제 기록
-
-그 주제가 알아야 할 것만 쓴다. 주 기록을 줄여 옮기지 않는다 — 같은 내용이 두 곳에 있으면 한쪽만 고쳐지면서 어긋난다.
+Fill in this template. Leave empty sections as "N/A", so the next session can tell a missing section from "checked and none".
 
 ```markdown
-# 세션 기록: [이 주제 관점의 한 줄]
+# Session record: [one line on the core topic]
 
-## 연결
-- **이 기록**: history/<주제2>/<ID>/<파일> — 연결
-- **주 기록**: history/<주제>/<ID>/<파일> — 전체 요약은 거기
-- **이 세션**: `<세션 ID>` · 작업 폴더 `<WORKDIR>`
+## Links
+- **This record**: history/<topic>/<ID>/<file> (main)
+- **This session**: `<session ID>` · working folder `<WORKDIR>`
+- **Other records of the same session**: history/<topic2>/<ID>/<file> (that side's part in one line; "none" if none)
+- **Previous record**: history/<topic>/<ID>/<file> (what was inherited; "none" if none)
+- **Other repositories**: path ("none" if none)
 
-## 이 주제에 온 것
-무엇이 넘어왔고 왜 이 주제와 걸리나.
+## Session info
+- **Date**: YYYY-MM-DD
+- **Topic**: <topic> (person <ID>)
+- **Session restore**: `cd '<WORKDIR>' && claude --resume '<session ID>'`
 
-## 이 주제에 걸린 것
-여기서 해야 하거나 기다리는 것. 이 주제 몫의 결정(원문).
+## Purpose (Why)
+What is this meant to enable: one line on the goal beyond the change itself.
 
-## 다음에 할 일
+## Goal (Outcome)
+Results that can be checked at the end of the session (files, links, data state).
+
+## Short-term goal (Next Action)
+1 to 3 things the next session can start on right away. Actions, not analysis.
 - [ ] ...
 
-## 세션 복원
-cd '<WORKDIR>' && claude --resume '<세션 ID>'
+## Work summary
+3 to 7 things done.
+
+## What succeeded
+What was actually solved or confirmed, and "why it was done this way". Write confirmation as values (the value read back). "Done" is a claim; "read back and it was X" is a value.
+
+## Decisions
+- Quote the user's decisions **verbatim**. Write proposals (interpretations) separately as "Interpretation:".
+- Separate what you decided on your own judgment as "My judgment (reported)".
+
+## Lessons
+Detours, mistakes, preventing recurrence: the judgment level that code cannot solve.
+
+## Constraints and problems found
+Tool, environment and external constraints; unresolved problems (symptom, suspected cause, handling).
+
+## Current state
+Done / in progress / on hold.
+
+## Work state (Step 4 snapshot)
+- Vault git:
+- Other repositories:
+- Remaining work:
+
+## To do in later sessions (backlog)
+Things to do someday, separate from the short-term goal.
+
+## Session restore
+cd '<WORKDIR>' && claude --resume '<session ID>'
 ```
 
-- 연결 기록은 그 주제의 history 에 **새 파일 하나를 더하는 것까지만** 한다. 그 주제의 문서에 무엇을 반영할지는 그 주제가 정한다.
-- 기록끼리 경로를 서로 적는다.
+### Linked topic record
 
-## Step 6: 검사 · 저장 · git
+Write only what that topic needs to know. Do not abridge the main record into it; if the same content is in two places, only one gets fixed and they drift apart.
 
-history 는 git 에 올라간다. 올라간 것은 지워도 이력에 남는다 — 그래서 저장 전에 검사한다.
+```markdown
+# Session record: [one line from this topic's view]
 
-1. **비밀 · 개인정보 검사** — 쓴 파일 모두에 돌리고, 걸린 줄을 하나씩 본다:
+## Links
+- **This record**: history/<topic2>/<ID>/<file> (linked)
+- **Main record**: history/<topic>/<ID>/<file> (full summary is there)
+- **This session**: `<session ID>` · working folder `<WORKDIR>`
+
+## What came into this topic
+What came over and why it touches this topic.
+
+## What is pending in this topic
+What must be done or awaited here. Decisions that are this topic's to make (verbatim).
+
+## Next to do
+- [ ] ...
+
+## Session restore
+cd '<WORKDIR>' && claude --resume '<session ID>'
+```
+
+- A linked record goes **no further than adding one new file** to that topic's history. What to reflect in that topic's documents is for that topic to decide.
+- Records write each other's paths.
+
+## Step 6: Check, save, git
+
+History goes into git. Whatever goes in remains in the log even if deleted, so check before saving.
+
+1. **Secrets and personal data check**: run it over every file written and look at each hit line by line:
    ```bash
-   grep -nEi '(token|secret|passw(or)?d|private[_ -]?key|api[_-]?key)[^|]{0,20}[:=]|-----BEGIN|\b[0-9]{10,}\b' <파일들>
+   grep -nEi '(token|secret|passw(or)?d|private[_ -]?key|api[_-]?key)[^|]{0,20}[:=]|-----BEGIN|\b[0-9]{10,}\b' <files>
    ```
-   - 비밀(토큰 · 키 · 비밀번호 · 접속 문자열)은 쓰지 않는다. 자리만 적는다(예: 「`.env` 의 토큰」).
-   - 개인정보(전화번호 · 계좌번호 · 실명 목록)는 쓰지 않는다. 건수 · 묶음 번호처럼 셈만 남긴다.
-   - 걸린 것이 정상 값(번호 · 금액 · ID)이면 그대로 둔다. 고쳤으면 다시 돌린다.
-2. **저장** — 새 파일만 만든다. 이미 있는 이름이면 연번을 올린다.
-3. **git** — 볼트가 git 저장소이면 내 파일로 한정해 커밋한다(여러 세션이 같은 작업 트리를 쓸 수 있다):
+   - Do not write secrets (tokens, keys, passwords, connection strings). Write only where they are (e.g. "the token in `.env`").
+   - Do not write personal data (phone numbers, bank account numbers, lists of real names). Keep only counts or batch numbers.
+   - If a hit is a legitimate value (a number, amount or ID), leave it. If you fixed something, run it again.
+2. **Save**: create new files only. If the name already exists, raise the sequence number.
+3. **git**: if the vault is a git repository, commit limited to your own files (several sessions may share one working tree):
    ```bash
-   cd "$ROOT" && git add -- <내 파일들>
-   git diff --cached --name-only          # 전체를 본다 — 남이 올려 둔 것이 섞였나
-   git commit -m "docs(history): <주제> — <제목>" -- <내 파일들>
+   cd "$ROOT" && git add -- <my files>
+   git diff --cached --name-only          # look at everything: did someone else's staged work get mixed in?
+   git commit -m "docs(history): <topic> - <title>" -- <my files>
    ```
-   원격이 있고 평소 PR 로 합치는 저장소이면 브랜치 → PR 흐름을 따른다. 아니면 커밋까지만 하고 push 여부를 사용자에게 묻는다.
+   If there is a remote and the repository is normally merged by PR, follow the branch then PR flow. Otherwise stop at the commit and ask the user whether to push.
 
-## Step 7: 결정 → 대기소
+## Step 7: Decisions to the inbox
 
-**현재 상태가 완료이고 결정 사항이 있을 때만** 한다. 주 주제의 `<주제>/_inbox/날짜-주제.md` 에 결정을 원문 그대로 원재료로 놓는다(`vault-push` 와 같은 꼴). 정리해서 볼트 문서에 넣는 것은 `vault-ingest` 가 한다. 미완이 남았으면 만들지 않고 다음 세션이 완료한 뒤에 만든다.
+Do this **only when the current state is done and there are decisions.** In the main topic's `<topic>/_inbox/date-topic.md`, put the decisions verbatim as raw material (same form as `vault-push`). Organizing them into vault documents is done by `vault-ingest`. If anything is unfinished, do not create it; create it after the next session completes the work.
 
-- 연결 주제의 `_inbox` 에는 놓지 않는다 — 그쪽은 history 의 연결 기록으로 알게 된다.
-- `_inbox` 파일도 Step 6 의 검사 · 커밋에 함께 넣는다.
+- Do not put anything in a linked topic's `_inbox`; that side learns of it through the linked record in history.
+- Include the `_inbox` file in Step 6's check and commit as well.
 
-## Step 8: 보고
+## Step 8: Report
 
-사실을 먼저, 평범한 말로. 하지 않은 단계는 「미실행 — 사유」로 적는다.
+Facts first, in plain words. Write steps not done as "not run: reason".
 
 ```
-세션 기록 완료
-- <주제>: history/<주제>/<ID>/<파일> (주)
-- <주제2>: history/<주제2>/<ID>/<파일> (연결)
-대기소: <주제>/_inbox/<파일> (또는 「미완료 — 다음 세션에서」 · 「결정 없음」)
-git: 커밋 <번호> (또는 사유)
-복원: cd '<WORKDIR>' && claude --resume '<세션 ID>'
+Session record complete
+- <topic>: history/<topic>/<ID>/<file> (main)
+- <topic2>: history/<topic2>/<ID>/<file> (linked)
+Inbox: <topic>/_inbox/<file> (or "not complete: next session" / "no decisions")
+git: commit <hash> (or reason)
+Restore: cd '<WORKDIR>' && claude --resume '<session ID>'
 ```
 
-## 금지
+## Prohibitions
 
-- **기록만 한다** — 코드 수정 · 실행, 다른 주제의 문서 수정은 하지 않는다. 다른 주제에는 history 의 새 파일만 더한다.
-- **비밀 · 개인정보를 쓰지 않는다** — Step 6 검사를 건너뛰지 않는다.
-- **덮어쓰지 않는다** — 늘 새 파일.
-- **볼트 밖 저장소에 쓰지 않는다.**
+- **Record only**: no code changes or execution, and no edits to other topics' documents. For other topics, only add new files to history.
+- **Do not write secrets or personal data**: never skip the Step 6 check.
+- **Do not overwrite**: always a new file.
+- **Do not write to repositories outside the vault.**

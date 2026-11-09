@@ -1,51 +1,51 @@
-# 지식창고 구조 규약
+# Knowledge Vault Structure Convention
 
-이 폴더는 **주제(topic)별로 나눈 나만의 지식창고**다. 아래 규약이 구조의 단일 출처이고, `vault-provision` · `vault-push` · `vault-ingest` · `vault-search` · `vault-lint` · `vault-session` 이 모두 이 문서를 연다. 값을 스킬에 베끼지 말고 여기를 고친다.
+This folder is a **personal knowledge vault divided by topic.** The convention below is the single source of structure, and `vault-provision`, `vault-push`, `vault-ingest`, `vault-search`, `vault-lint` and `vault-session` all open this document. Do not copy values into the skills; fix them here.
 
-## 구조
+## Structure
 
 ```
-<루트>/
-├── CLAUDE.md                  ← 이 문서
-├── <topic>/                   ← 주제 1개 = 폴더 1개 (몇 개든)
-│   ├── README.md              개요 · 범위 · 용어 · 외부 자료 포인터 · 이력
-│   ├── INDEX.md               문서 지도 (문서 1개 = 1줄: 요약 · 상태 · 위치)
-│   ├── _inbox/                정리 대기소 (날짜-주제.md, 정리 뒤 비운다)
-│   └── docs/                  정리된 문서 (문서 1개 = 파일 1개)
+<root>/
+├── CLAUDE.md                  ← this document
+├── <topic>/                   ← 1 topic = 1 folder (any number)
+│   ├── README.md              overview, scope, terms, pointers to external material, history
+│   ├── INDEX.md               document map (1 document = 1 line: summary, status, location)
+│   ├── _inbox/                inbox for material waiting to be organized (date-topic.md, emptied after organizing)
+│   └── docs/                  organized documents (1 document = 1 file)
 └── history/
-    └── <topic>/<사람ID>/YY-MM-DD_연번_제목.md    세션 기록
+    └── <topic>/<person-id>/YY-MM-DD_NN_title.md    session records
 ```
 
-- 빈 폴더는 미리 만들지 않는다. 내용이 올 때 만든다.
-- 이름: 소문자 slug · 대표 문서 = 폴더 이름 · 날짜는 `YYYY-MM-DD`(기록 파일은 `YY-MM-DD`).
+- Do not pre-create empty folders. Create them when content arrives.
+- Naming: lowercase slugs; the main document = the folder name; dates are `YYYY-MM-DD` (record files use `YY-MM-DD`). `NN` in a record file name is the sequence number of that day's records, counted per person folder.
 
-## 문서 템플릿 (docs/<문서>.md)
+## Document template (docs/<document>.md)
 
-1. **요약** — 한두 문장 · 상태(확정 / 작성 중 / 보류) · 최종 수정일
-2. **핵심 내용** — 결정된 것만. 추측 · 시행착오는 history 로.
-3. **근거 · 출처** — 어디서 나온 내용인지(링크 · 파일 위치 · 날짜)
-4. **연결** — 관련 문서 · 다른 주제 문서 경로
-5. **원본 위치** — 실물(코드 · 데이터 · 원문)이 있는 곳. 실물을 여기에 복사하지 않는다.
-6. **이력** — `날짜 — 무엇을 왜 바꿨나` 한 줄씩
+1. **Summary**: one or two sentences, status (confirmed / in progress / on hold), last modified date
+2. **Key content**: decided things only. Guesses and trial and error go to history.
+3. **Evidence / sources**: where the content came from (link, file location, date)
+4. **Connections**: related documents, paths to documents in other topics
+5. **Original location**: where the real material (code, data, original text) lives. Do not copy it here.
+6. **History**: one line each, `date: what changed and why`
 
-## 원칙
+## Principles
 
-- **원본은 한 곳** — 실물은 원래 있는 자리에 두고 지식창고는 가리키기만 한다(포인터). 긴 코드 · 데이터 · 원문을 복사해 붙이지 않는다.
-- **지식창고는 결정된 것만** — 결정 전 · 미완 · 시행착오는 history 에 둔다. history 의 결정을 지식창고로 올리는 길은 `_inbox` 뿐이다.
-- **지어내지 않는다** — 모르는 것은 "확인 필요"로 적는다.
-- **중복 금지** — 같은 주제 문서가 있으면 새로 만들지 말고 합친다. 주제 사이에 같은 자원이 있는 것은 정상이다(검사 단위는 한 주제 폴더 안).
+- **One home for the original**: real material stays where it is, and the vault only points to it (pointer). Do not paste long code, data or original text.
+- **The vault holds only what is decided**: anything undecided, unfinished or trial and error stays in history. The only route from a decision in history to the vault is `_inbox`.
+- **Do not invent**: write "needs confirmation" for what is unknown.
+- **No duplicates**: if a document on the same subject exists, merge instead of creating a new one. The same resource appearing in different topics is normal (the check unit is one topic folder).
 
-## 정리 대기소 (_inbox)
+## Inbox (_inbox)
 
-- 아직 분류 안 된 메모 · 결정 · 붙여넣은 문서 · 원본 위치 포인터를 `<topic>/_inbox/날짜-주제.md` 로 놓는다(`vault-push`). 사람이 파일을 직접 드롭해도 같다.
-- `vault-ingest` 가 `docs/` 로 정리해 넣고, 다 쓴 파일은 지운다. 대기소는 쌓아두는 곳이 아니다.
+- Put memos, decisions, pasted documents and original-location pointers that are not yet classified into `<topic>/_inbox/date-topic.md` (`vault-push`). A person dropping a file in directly counts the same.
+- `vault-ingest` organizes them into `docs/` and deletes the used files. The inbox is not a place to pile things up.
 
-## 세션 기록 (history)
+## Session records (history)
 
-- 세션이 한 일은 `history/<topic>/<사람ID>/YY-MM-DD_연번_제목.md` 에 남긴다(`vault-session`). 한 세션이 여러 주제에 걸치면 **주제마다 따로** 쓰고 서로 경로로 가리킨다.
-- 사람마다 자기 폴더에 **새 파일만** 더한다. 덮어쓰지 않는다.
+- What a session did is recorded in `history/<topic>/<person-id>/YY-MM-DD_NN_title.md` (`vault-session`). If one session spans several topics, write **a separate record per topic** and have them point to each other by path.
+- Each person only adds **new files** to their own folder. Never overwrite.
 
-## 비밀 · 개인정보
+## Secrets and personal data
 
-- 비밀(토큰 · 키 · 비밀번호 · 접속 문자열)과 개인정보(전화번호 · 계좌 · 실명 목록)는 문서와 기록에 쓰지 않는다. 자리(어느 파일의 어느 항목)만 적는다.
-- 저장소에 올리면 지워도 이력에 남는다 — 올리기 전에 검사한다.
+- Do not write secrets (tokens, keys, passwords, connection strings) or personal data (phone numbers, bank accounts, lists of real names) into documents or records. Write only the location (which file, which entry).
+- Once pushed to a repository, they remain in history even if deleted, so check before pushing.

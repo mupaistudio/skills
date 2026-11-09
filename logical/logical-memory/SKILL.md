@@ -1,192 +1,192 @@
 ---
 name: logical-memory
-description: "MECE 원칙으로 Claude Code 의 자동 메모리(MEMORY.md + 주제별 파일) 구조를 검증하고 재구성한다 — 중복·누락(고아 파일·깨진 링크)·분해 기준 일관성을 점검하고, MEMORY.md 가 한도(200줄)를 넘으면 상세를 주제별 파일로 옮기는 안을 만든다. 실행은 사용자 승인 뒤에만, 내용은 지우지 않고 옮기기만 한다. Verify and reorganize Claude Code auto-memory (MEMORY.md plus topic files) with MECE: find duplicates, orphan files, broken links, and move detail out of an oversized MEMORY.md after approval. 트리거: 메모리 정리, 메모리 검증, MEMORY.md 재구성, 메모리 다이어트, 메모리 MECE, 지식 구조화, memory cleanup."
+description: "Verify and reorganize Claude Code auto-memory (MEMORY.md plus topic files) using MECE principles: find duplicates, orphan files, broken links and inconsistent decomposition criteria, and propose moving detail out of an oversized MEMORY.md (over 200 lines) into topic files. Runs only after user approval and never deletes content, only moves it. Use when asked to clean up memory, verify memory, reorganize MEMORY.md, slim down memory, apply MECE to memory, or structure knowledge."
 ---
 
-# logical-memory — 메모리 구조 검증 및 재구성
+# logical-memory - Memory Structure Verification and Reorganization
 
-MECE 원칙으로 자동 메모리 파일들의 구조를 검증하고 최적화한다.
+Verify and optimize the structure of auto-memory files using MECE principles.
 
-## 메모리 디렉토리
+## Memory Directory
 
 ```
-~/.claude/projects/<프로젝트 폴더 이름>/memory/
-├── MEMORY.md          # 목차 + 핵심 규칙 (200줄 한정, 항상 로드)
-├── details.md         # 상세 참조 (있을 때)
-└── <topic>.md         # 주제별 분리 파일
+~/.claude/projects/<project folder name>/memory/
+├── MEMORY.md          # index + core rules (200-line limit, always loaded)
+├── details.md         # detailed reference (if present)
+└── <topic>.md         # per-topic split files
 ```
 
-프로젝트 폴더 이름은 작업 폴더 경로의 `/` · `\` · `:` 를 `-` 로 바꾼 것이다. 모르면 `~/.claude/projects/` 를 열어 현재 작업 폴더에 해당하는 폴더를 찾는다.
+The project folder name is the working directory path with `/`, `\` and `:` replaced by `-`. If unsure, open `~/.claude/projects/` and find the folder matching the current working directory.
 
-## 2계층 원칙
+## Two-Layer Principle
 
-### Layer 1: MEMORY.md (항상 로드, 200줄 한정)
+### Layer 1: MEMORY.md (always loaded, 200-line limit)
 ```yaml
-역할: 포인터 인덱스 (내용 인라인 금지)
-포함:
-  - 상세 파일 포인터 (링크 + 1줄 요약)
-  - 주제 파일이 없는 독립 규칙만 예외적으로 인라인 허용
-금지:
-  - 코드 스니펫
-  - 구현 디테일
-  - 히스토리/날짜 (참조용 날짜 1개는 허용)
-  - 스킬에 이미 있는 내용 (중복 금지)
-  - 코드에서 파생 가능한 패턴 (grep/ls 로 확인 가능한 것)
+role: pointer index (no inline content)
+include:
+  - Pointers to detail files (link + one-line summary)
+  - Standalone rules with no topic file may be inlined as an exception
+forbid:
+  - Code snippets
+  - Implementation details
+  - History/dates (one reference date is allowed)
+  - Content already in a skill (no duplication)
+  - Patterns derivable from code (checkable with grep/ls)
 ```
 
-### Layer 2: 주제별 파일 (필요할 때 로드)
+### Layer 2: Topic Files (loaded when needed)
 ```yaml
-역할: 특정 주제의 상세 지식
-분할_기준: MECE — 하나의 주제가 하나의 파일
-네이밍: kebab-case, 20자 이내
-크기: 200줄 이내 권장
-포함:
-  - "코드만 보면 실수할 수 있는" gotcha/경험
-  - 의사결정 이력
-  - 구현 패턴 상세
-  - 표/비교표
-금지:
-  - 스킬에 이미 있는 절차/방법
-  - 코드에서 파생 가능한 구조/경로/시그니처
-업데이트_규칙:
-  - 새 지식이 생기면 기존 주제 파일이 있을 때 그 파일에 추가 (새 파일 생성 금지)
-  - 기존 주제 파일이 없는 새 주제만 새 파일 생성 + 인덱스에 포인터 추가
+role: detailed knowledge on one topic
+split criterion: MECE - one topic per file
+naming: kebab-case, 20 characters or fewer
+size: 200 lines or fewer recommended
+include:
+  - Gotchas/experience that "you could get wrong from the code alone"
+  - Decision history
+  - Implementation pattern details
+  - Tables/comparison tables
+forbid:
+  - Procedures/methods already in a skill
+  - Structure/paths/signatures derivable from code
+update rules:
+  - When new knowledge appears, add it to the existing topic file if there is one (do not create a new file)
+  - Only for a new topic with no existing file: create a new file + add a pointer to the index
 ```
 
-## 실행 절차
+## Procedure
 
-### Step 1: 현상 분석
+### Step 1: Current State Analysis
 ```yaml
-수집:
-  1. MEMORY.md 줄 수 확인 (200줄 한정)
-  2. 모든 상세 파일 목록 + 줄 수
-  3. MEMORY.md 섹션 목록 추출
-  4. 상세 파일별 섹션 목록 추출
+collect:
+  1. MEMORY.md line count (200-line limit)
+  2. List of all detail files + line counts
+  3. Extract the MEMORY.md section list
+  4. Extract the section list of each detail file
 ```
 
-### Step 2: MECE 검증
+### Step 2: MECE Verification
 
-#### ME (상호배타성) — 중복 점검
+#### ME (Mutual Exclusivity) - duplicate check
 ```yaml
-검증:
-  - MEMORY.md 내부 섹션 간 중복
-  - MEMORY.md ↔ 상세 파일 간 중복 (포인터 제외)
-  - 상세 파일 간 중복
-  - 스킬과의 중복 (스킬에 있는 내용이 메모리에도 있는지)
+check:
+  - Duplicates between sections inside MEMORY.md
+  - Duplicates between MEMORY.md and detail files (excluding pointers)
+  - Duplicates between detail files
+  - Duplicates with skills (is content in a skill also in memory?)
 
-위반_표시: (중복) [내용] — MEMORY.md L42 ↔ details.md L108
+violation marker: (duplicate) [content] - MEMORY.md L42 <-> details.md L108
 ```
 
-#### CE (완전망라성) — 누락 점검
+#### CE (Collective Exhaustiveness) - gap check
 ```yaml
-검증:
-  - MEMORY.md 에 포인터 없는 상세 파일 (고아 파일)
-  - 상세 파일에 있지만 MEMORY.md 에 요약 없는 주제
-  - MEMORY.md 에 포인터 있지만 상세 파일 없는 주제 (깨진 링크)
+check:
+  - Detail files with no pointer in MEMORY.md (orphan files)
+  - Topics in detail files with no summary in MEMORY.md
+  - Topics with a pointer in MEMORY.md but no detail file (broken links)
 
-위반_표시: (누락) [내용] — 포인터/요약/파일 없음
+violation marker: (gap) [content] - no pointer/summary/file
 ```
 
-#### 분해 기준 일관성
+#### Decomposition Criterion Consistency
 ```yaml
-검증:
-  - MEMORY.md 최상위 섹션이 동일 기준으로 분해되었는가
-  - 권장 기준: 도메인(주제)별
-  - 혼재 금지: 도메인 + 기술 + 시간(날짜)
+check:
+  - Are the top-level MEMORY.md sections decomposed by the same criterion?
+  - Recommended criterion: by domain (topic)
+  - Do not mix: domain + technology + time (dates)
 ```
 
-### Step 3: 개선안 제시
+### Step 3: Propose Improvements
 
-#### MEMORY.md 다이어트 (200줄 초과 시)
+#### MEMORY.md Diet (when over 200 lines)
 ```yaml
-이관_후보:
-  1. 코드 스니펫 → 주제별 파일로
-  2. 상세 규칙 (3줄+) → 주제별 파일로, MEMORY.md 에는 1줄 요약
-  3. 히스토리 날짜 → 제거 (주제별 파일에만 유지)
+move candidates:
+  1. Code snippets -> topic files
+  2. Detailed rules (3+ lines) -> topic files, keep a one-line summary in MEMORY.md
+  3. History dates -> remove (keep only in topic files)
 
-유지_대상:
-  1. ❌/✅ 패턴 (실수 방지 규칙)
-  2. 핵심 1줄 요약
-  3. 포인터 링크
+keep:
+  1. ❌/✅ patterns (mistake-prevention rules)
+  2. Core one-line summaries
+  3. Pointer links
 ```
 
-#### details.md 분할 (150줄+ 시)
+#### details.md Split (at 150+ lines)
 ```yaml
-분할_기준:
-  - 독립 주제 → 별도 파일
-  - 관련 주제 묶음 유지
+split criteria:
+  - Independent topic -> separate file
+  - Keep related topics grouped
 
-분할_절차:
-  1. 새 파일 생성 (주제별)
-  2. details.md 에서 해당 섹션 제거
-  3. MEMORY.md 포인터 업데이트 (details.md#앵커 → 새파일.md)
+split procedure:
+  1. Create new files (per topic)
+  2. Remove those sections from details.md
+  3. Update MEMORY.md pointers (details.md#anchor -> new-file.md)
 ```
 
-### Step 4: 리포트 출력
+### Step 4: Output Report
 
 ```markdown
-# 메모리 구조 검증 리포트
+# Memory Structure Verification Report
 
-## 현상
-- MEMORY.md: __줄 (한도: 200)
-- 상세 파일: [파일별 줄 수]
+## Current State
+- MEMORY.md: __ lines (limit: 200)
+- Detail files: [line count per file]
 
-## MECE 검증
-### ME (중복)
-- (중복) [내용] — 위치1 ↔ 위치2
-### CE (누락)
-- (누락) [내용] — 이유
-### 분해 기준
-- [평가]
+## MECE Verification
+### ME (duplicates)
+- (duplicate) [content] - location 1 <-> location 2
+### CE (gaps)
+- (gap) [content] - reason
+### Decomposition criterion
+- [assessment]
 
-## 제안
-### 즉시 (200줄 초과 해결)
-1. [이관 대상] → [목적지]
+## Proposals
+### Immediate (resolve the 200-line overflow)
+1. [item to move] -> [destination]
 
-### 단기 (구조 개선)
-1. [분할/통합 대상]
+### Short term (structure improvement)
+1. [item to split/merge]
 
-### 정리 후 예상
-- MEMORY.md: __줄 → __줄
-- 파일 구조: [변경 후]
+### Expected after cleanup
+- MEMORY.md: __ lines -> __ lines
+- File structure: [after the change]
 
-실행할까요?
+Shall I proceed?
 ```
 
-### Step 5: 실행 (사용자 승인 후)
+### Step 5: Execute (after user approval)
 
 ```yaml
-절차:
-  1. 새 주제별 파일 생성
-  2. MEMORY.md 에서 이관된 내용 제거 + 포인터 추가
-  3. details.md 에서 분할된 내용 제거
-  4. 깨진 링크 수정
-  5. 최종 줄 수 확인
+procedure:
+  1. Create new topic files
+  2. Remove moved content from MEMORY.md + add pointers
+  3. Remove split content from details.md
+  4. Fix broken links
+  5. Confirm final line count
 
-원칙:
-  - 내용 삭제 금지 — 이동만 허용
-  - 사용자 승인 없이 실행 금지
-  - 한 번에 하나의 변경 (리뷰 가능하도록)
+principles:
+  - Never delete content - only move it
+  - Never execute without user approval
+  - One change at a time (so it can be reviewed)
 ```
 
-## MEMORY.md 이상적 구조
+## Ideal MEMORY.md Structure
 
 ```markdown
-# [프로젝트명] 핵심 패턴
+# [Project Name] Core Patterns
 
-> 상세: [topic-a.md](topic-a.md) | [topic-b.md](topic-b.md) | ...
+> Details: [topic-a.md](topic-a.md) | [topic-b.md](topic-b.md) | ...
 
-## 주제A
-- 규칙1 (1줄)
-- 규칙2 (1줄)
-- 상세 → [topic-a.md](topic-a.md)
+## Topic A
+- Rule 1 (one line)
+- Rule 2 (one line)
+- Details -> [topic-a.md](topic-a.md)
 
-## 주제B
-- 규칙1 (1줄)
-- 상세 → [topic-b.md](topic-b.md)
+## Topic B
+- Rule 1 (one line)
+- Details -> [topic-b.md](topic-b.md)
 
-(150-180줄 유지, 20줄 여유)
+(keep to 150-180 lines, leaving 20 lines of headroom)
 ```
 
-## 연계
-- `logical-verification` — 범용 MECE 검증 (메모리 특화가 아닌 범용)
+## Related Skills
+- `logical-verification` - general-purpose MECE verification (not memory-specific)

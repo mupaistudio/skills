@@ -1,6 +1,6 @@
 /**
- * CDP 공용 — 포트 · 연결 · 탭 고르기 · 캡처 임시 폴더 · 비밀값 가림.
- * 포트: env CDP_PORT, 없으면 9333.
+ * CDP helpers: port, connection, tab picking, capture temp folder, secret masking.
+ * Port: env CDP_PORT, else 9333.
  */
 const fs = require('fs');
 const os = require('os');
@@ -14,18 +14,18 @@ function cdpPort() {
 }
 
 async function connect() {
-    const { chromium } = require('./pw'); // 고정 판 playwright-core (ensure-deps.js 가 깐 자리)
+    const { chromium } = require('./pw'); // pinned playwright-core (installed by ensure-deps.js)
     const port = cdpPort();
     try {
         return await chromium.connectOverCDP('http://127.0.0.1:' + port);
     } catch (e) {
-        console.error(`[ERR] CDP 연결 실패(포트 ${port}). start.ps1 -Port ${port} 먼저 실행하세요.`);
+        console.error(`[ERR] CDP connection failed (port ${port}). Run start.ps1 -Port ${port} first.`);
         console.error(`     ${e.message}`);
         process.exit(1);
     }
 }
 
-// --tab=<idx> | <URL 부분> | 없음(마지막 탭)
+// --tab=<idx> | <part of URL> | none (last tab)
 function pickPage(context, tabSelector) {
     const pages = context.pages();
     if (pages.length === 0) return null;
@@ -34,19 +34,19 @@ function pickPage(context, tabSelector) {
     if (String(idx) === String(tabSelector) && idx >= 0 && idx < pages.length) return pages[idx];
     const matched = pages.find(p => p.url().includes(tabSelector));
     if (matched) return matched;
-    console.error(`[ERR] 탭 매칭 실패: ${tabSelector}`);
+    console.error(`[ERR] No tab matched: ${tabSelector}`);
     pages.forEach((p, i) => console.error(`  [${i}] ${p.url()}`));
     process.exit(2);
 }
 
-// 캡처 · 진단은 임시 폴더에 둔다(스킬 폴더에 쓰지 않음)
+// Captures and diagnostics go to a temp folder (never the skill folder)
 function workDir(slug) {
     const dir = path.join(process.env.USE_BROWSER_WORK || path.join(os.tmpdir(), 'use-browser'), slug || '_scratch');
     fs.mkdirSync(dir, { recursive: true });
     return dir;
 }
 
-// 진단 파일에 적기 전에 비밀값을 가림
+// Mask secrets before writing to diagnostics files
 const RED = s => String(s)
     .replace(/eyJ[\w-]+\.[\w-]+\.[\w-]+/g, '<jwt>')
     .replace(/("(?:password|refresh_token|access_token)"\s*:\s*")[^"]*/g, '$1***');
